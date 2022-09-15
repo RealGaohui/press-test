@@ -6,14 +6,12 @@ import (
 	"errors"
 	"github.com/RealGaohui/urlBuilder"
 	"github.com/tidwall/gjson"
-	"go/src/strconv"
 	"io/ioutil"
 	"net/http"
 	cfg "press-test/config"
 	logger "press-test/log"
+	"strconv"
 )
-
-
 
 type BackfillRequest struct {
 	Name                 string        `json:"name"`
@@ -57,10 +55,9 @@ type replayTask struct {
 	ClusterName                string        `json:"clusterName"`
 }
 
-
 type Backfill struct {
 	backfill BackfillRequest
-	taskId  int
+	taskId   int
 }
 
 type ID int
@@ -74,15 +71,15 @@ type Interface interface {
 	Alert
 }
 
-func NewID(id int)check{
+func NewID(id int) check {
 	i := ID(id)
 	return &i
 }
 
-func (i *ID)CheckBackfillFinish() bool {
+func (i *ID) CheckBackfillFinish() bool {
 	url := urlBuilder.URLBuilder().
 		SetBase(cfg.FpBaseUrl).
-		SetPath("/" ).
+		SetPath("/").
 		SetPath(cfg.Client).
 		SetPath("/backfill/").
 		SetPath(strconv.Itoa(int(*i))).
@@ -100,7 +97,7 @@ func (i *ID)CheckBackfillFinish() bool {
 	if ReadBodyError != nil {
 		return ReadBodyError == nil
 	}
-	if !gjson.Valid(string(resp)){
+	if !gjson.Valid(string(resp)) {
 		return false
 	}
 	if gjson.Get(string(resp), "status").String() == "COMPLETED" {
@@ -110,7 +107,7 @@ func (i *ID)CheckBackfillFinish() bool {
 	return false
 }
 
-func (b *Backfill)DoBackfill() (check, error){
+func (b *Backfill) DoBackfill() (check, error) {
 	var Check check
 	logger.Logger().Infof("create backfill task: %s", b.backfill.Name)
 	URL := urlBuilder.URLBuilder().
@@ -136,7 +133,7 @@ func (b *Backfill)DoBackfill() (check, error){
 	if ReadBodyError != nil {
 		return Check, ReadBodyError
 	}
-	if !gjson.Valid(string(resp)){
+	if !gjson.Valid(string(resp)) {
 		return Check, errors.New("Invalid Json")
 	}
 	id, _ := strconv.Atoi(gjson.Get(string(resp), "id").String())
@@ -144,7 +141,7 @@ func (b *Backfill)DoBackfill() (check, error){
 	return NewID(id), nil
 }
 
-func (b *Backfill)SendWechat(message string) error {
+func (b *Backfill) SendWechat(message string) error {
 	data := map[string]interface{}{}
 	mentioned_list := []string{"@all"}
 	text := make(map[string]interface{})
@@ -165,4 +162,3 @@ func (b *Backfill)SendWechat(message string) error {
 	}()
 	return nil
 }
-

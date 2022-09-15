@@ -5,7 +5,7 @@ import (
 	Controller "press-test/controller"
 )
 
-func main(){
+func main() {
 	if err := Controller.Prepare(); err != nil {
 		os.Exit(1)
 	}

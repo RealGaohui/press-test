@@ -24,8 +24,7 @@ var (
 	output  []byte
 )
 
-type Press struct {}
-
+type Press struct{}
 
 type fpTenant struct {
 	Name string `json:"name"`
@@ -39,7 +38,7 @@ type execute interface {
 	WaitKafkaConsumer() bool
 	DeletePV(db string) bool
 	PrepareDir(path string) error
-	CreateFile(dir, name string)error
+	CreateFile(dir, name string) error
 	RecordWrkLog(log string) error
 	GenerateWrkResult(wrkResult string) (*WRK, error)
 	FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, isUpdate bool, connectNum int) error
@@ -47,17 +46,17 @@ type execute interface {
 	EndpointIncreasing(resource *Resource)
 	FPCPUIncreasing(cpu *CPU)
 	CassandraCPUIncreasing(cpu *CPU)
-	CopyTemplate(template, index string) ( string, error)
+	CopyTemplate(template, index string) (string, error)
 	RestartFP(namespace string) bool
 	WaitForReady(deployName, deployType, namespace string) bool
 	WriteCSVHeader() error
 }
 
-func NewPress() execute{
+func NewPress() execute {
 	return &Press{}
 }
 
-func (p *Press)SendWechat(message string) error{
+func (p *Press) SendWechat(message string) error {
 	data := map[string]interface{}{}
 	mentioned_list := []string{"@all"}
 	text := make(map[string]interface{})
@@ -79,7 +78,7 @@ func (p *Press)SendWechat(message string) error{
 	return nil
 }
 
-func (p *Press)CreateOrDeletePvPath(path, host, action string) error {
+func (p *Press) CreateOrDeletePvPath(path, host, action string) error {
 	client, sftpInitError := SftpConnect(host)
 	if sftpInitError != nil {
 		logger.Logger().Error("Failed to create sftp client")
@@ -103,7 +102,7 @@ func (p *Press)CreateOrDeletePvPath(path, host, action string) error {
 	return nil
 }
 
-func (p *Press)CreateFPTanant() (bool, error) {
+func (p *Press) CreateFPTanant() (bool, error) {
 	logger.Logger().Infof("create fp tenant for: %s", cfg.Client)
 	URL := urlBuilder.URLBuilder().
 		SetBase(cfg.FpBaseUrl).
@@ -130,11 +129,11 @@ func (p *Press)CreateFPTanant() (bool, error) {
 	return true, nil
 }
 
-func (p *Press)WaitKafkaConsumer() bool{
+func (p *Press) WaitKafkaConsumer() bool {
 	for {
 		cmd := fmt.Sprintf("kubectl --kubeconfig=%s exec -it -n %s kafka-0 -- kafka-consumer-groups --bootstrap-server localhost:9092 --group  velocity --describe | grep velocity.%s | awk '{{if ($5 != 0) {{print $5}}}}' | wc -l '''\n", cfg.KubeconfigPATH, cfg.K8sNamespaceCassandra, cfg.Client)
 		waitKafkaConsumerResult, waitKafkaConsumerCommand := p.Command(cmd)
-		if waitKafkaConsumerCommand != nil{
+		if waitKafkaConsumerCommand != nil {
 			return false
 		}
 		tmp := strconv.Itoa(0)
@@ -145,25 +144,25 @@ func (p *Press)WaitKafkaConsumer() bool{
 	}
 }
 
-func (p *Press)PrepareDir(path string) error {
-	if !checkExist(path){
+func (p *Press) PrepareDir(path string) error {
+	if !checkExist(path) {
 		err = os.MkdirAll(path, os.ModePerm)
-		if err != nil{
+		if err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (p *Press)CreateFile(dir, name string)error  {
+func (p *Press) CreateFile(dir, name string) error {
 	err = p.PrepareDir(dir)
 	if err != nil {
 		return err
 	}
 	file := path.Join(dir, name)
-	if !checkExist(file){
+	if !checkExist(file) {
 		_, err = os.Create(file)
-		if err != nil{
+		if err != nil {
 			return err
 		}
 	}
@@ -172,23 +171,22 @@ func (p *Press)CreateFile(dir, name string)error  {
 
 func checkExist(path string) bool {
 	_, err = os.Stat(path)
-	if err != nil || os.IsNotExist(err){
+	if err != nil || os.IsNotExist(err) {
 		return false
-	}else {
+	} else {
 		return true
 	}
 }
 
-func (p *Press)CopyTemplate(template, index string) (string, error)  {
-	if checkExist(template){
+func (p *Press) CopyTemplate(template, index string) (string, error) {
+	if checkExist(template) {
 		newFile := strings.Split(template, ".")[0] + "-" + index + ".yaml"
 		return newFile, nil
 	}
 	return "", nil
 }
 
-
-func (p *Press)Command(cmd string) (string, error) {
+func (p *Press) Command(cmd string) (string, error) {
 	command = exec.Command("bash", "-c", cmd)
 	output, err = command.Output()
 	if err != nil {
@@ -198,7 +196,7 @@ func (p *Press)Command(cmd string) (string, error) {
 	return string(output), nil
 }
 
-func (p *Press)DeletePV(db string) bool {
+func (p *Press) DeletePV(db string) bool {
 	//get themselves prefix namespace grepkey for each db
 	prefix := ""
 	namespace := ""
@@ -223,10 +221,10 @@ func (p *Press)DeletePV(db string) bool {
 	}
 	//pod slice
 	podSlice := strings.Split(pods, "\n")
-    Pods := podSlice[:len(podSlice)-1]
-    logger.Logger().Infof("Trying to delete pv for pods %s", Pods)
-    if Pods == nil {
-    	logger.Logger().Warn("No cassandra pods, continue next...")
+	Pods := podSlice[:len(podSlice)-1]
+	logger.Logger().Infof("Trying to delete pv for pods %s", Pods)
+	if Pods == nil {
+		logger.Logger().Warn("No cassandra pods, continue next...")
 		return true
 	}
 	if db == cfg.CASSANDRA {
@@ -243,10 +241,10 @@ func (p *Press)DeletePV(db string) bool {
 		logger.Logger().Infof("Command: %s", fmt.Sprintf("kubectl --kubeconfig %s -n %s delete ybclusters.yugabyte.com ybcluster", cfg.KubeconfigPATH, namespace))
 	}
 	logger.Logger().Info("Wait for cassandra to scale 0 or delete yb")
-    n := 0
-    for {
-    	getPodsResult, getPodsError := p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get po | grep %s | awk '{print $1}'", cfg.KubeconfigPATH, namespace, grepKey))
-    	if getPodsError != nil {
+	n := 0
+	for {
+		getPodsResult, getPodsError := p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get po | grep %s | awk '{print $1}'", cfg.KubeconfigPATH, namespace, grepKey))
+		if getPodsError != nil {
 			logger.Logger().Error("Failed to get pods for waiting")
 			return false
 		}
@@ -256,21 +254,21 @@ func (p *Press)DeletePV(db string) bool {
 			break
 		}
 		time.Sleep(5 * time.Second)
-    	n++
-    	if n == 60{
-    		logger.Logger().Warn("Failed to scale cassandra or delete yb in 5 mins")
+		n++
+		if n == 60 {
+			logger.Logger().Warn("Failed to scale cassandra or delete yb in 5 mins")
 		}
 	}
 	logger.Logger().Info("Scale cassandra to 0 or delete yb completed")
 
-    //delete pv for each pod
-    for _, pod := range Pods{
-    	logger.Logger().Infof("Delete pvc&pv for %s", pod)
+	//delete pv for each pod
+	for _, pod := range Pods {
+		logger.Logger().Infof("Delete pvc&pv for %s", pod)
 
-    	//delete pvc
-    	_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s delete pvc %s", cfg.KubeconfigPATH, namespace, prefix + "-" + pod))
-    	if err != nil {
-    		logger.Logger().Errorf("Failed to delete pvc for %s", pod)
+		//delete pvc
+		_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s delete pvc %s", cfg.KubeconfigPATH, namespace, prefix+"-"+pod))
+		if err != nil {
+			logger.Logger().Errorf("Failed to delete pvc for %s", pod)
 			return false
 		}
 		index := ""
@@ -295,28 +293,28 @@ func (p *Press)DeletePV(db string) bool {
 
 		//delete hostpath
 		hosts := strings.Split(strings.Replace(cfg.Host, " ", "", -1), ",")
-		for _, host := range hosts{
-			if err = p.CreateOrDeletePvPath(cfg.CassandraData1Path, host, cfg.ACTIONDELETE); err!= nil {
+		for _, host := range hosts {
+			if err = p.CreateOrDeletePvPath(cfg.CassandraData1Path, host, cfg.ACTIONDELETE); err != nil {
 				logger.Logger().Error(fmt.Sprintf("Failed to delete %s for %s", cfg.CassandraData1Path, host))
 				return false
 			}
 		}
 	}
-    //deploy yb
+	//deploy yb
 	if db == cfg.YB {
 		logger.Logger().Info("Start to deploy yb")
 		_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s apply -f  yb.yaml", cfg.KubeconfigPATH, namespace))
-		if err != nil{
+		if err != nil {
 			logger.Logger().Error("Failed to deploy yb")
 			return false
 		}
 		//wait yb pod is running
-		if !p.WaitForReady(db, cfg.STS, namespace){
+		if !p.WaitForReady(db, cfg.STS, namespace) {
 			logger.Logger().Warnf("%s is not running", db)
 			return false
 		}
 		//restart fp
-		if !p.RestartFP(namespace){
+		if !p.RestartFP(namespace) {
 			logger.Logger().Error("Failed to restart fp")
 			return false
 		}
@@ -324,21 +322,21 @@ func (p *Press)DeletePV(db string) bool {
 	return true
 }
 
-func (p *Press)RestartFP(namespace string) bool {
+func (p *Press) RestartFP(namespace string) bool {
 	_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s rollout restart deploy fp-deployment", cfg.KubeconfigPATH, namespace))
-	if err != nil{
+	if err != nil {
 		logger.Logger().Error("Failed to restart fp")
 		return false
 	}
 	//wait for fp ready
-	if !p.WaitForReady(cfg.FP, cfg.DEPLOY, namespace){
+	if !p.WaitForReady(cfg.FP, cfg.DEPLOY, namespace) {
 		logger.Logger().Warn("fp is not running")
 		return false
 	}
 	return true
 }
 
-func (p *Press)WaitForReady(deployName, deployType, namespace string) bool {
+func (p *Press) WaitForReady(deployName, deployType, namespace string) bool {
 	n := 0
 	for {
 		getDeployResult, getDeployErr := p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get %s %s | awk '{print $2}'", cfg.KubeconfigPATH, namespace, deployType, deployName))
@@ -383,22 +381,22 @@ func (p *Press) RecordWrkLog(log string) error {
 	return nil
 }
 
-//TODO
+// TODO
 func (p *Press) GenerateWrkResult(wrkResult string) (*WRK, error) {
 	generateResult := strings.Split(strings.Replace(wrkResult, "\n", " ", -1), " ")
 	logger.Logger().Info(len(generateResult))
 	logger.Logger().Info(generateResult)
 	generateResult8, _ := strconv.Atoi(generateResult[8])
 	wrk := WRK{
-		Total: generateResult[39],
-		Avg: generateResult[18],
-		Stdev: generateResult[19],
-		Max: generateResult[20],
-		P50: generateResult[30],
-		P75: generateResult[32],
-		P90: generateResult[34],
-		P95: generateResult[36],
-		P99: generateResult[38],
+		Total:       generateResult[39],
+		Avg:         generateResult[18],
+		Stdev:       generateResult[19],
+		Max:         generateResult[20],
+		P50:         generateResult[30],
+		P75:         generateResult[32],
+		P90:         generateResult[34],
+		P95:         generateResult[36],
+		P99:         generateResult[38],
 		Connections: generateResult8,
 	}
 	if len(generateResult) == 59 {
@@ -412,30 +410,30 @@ func (p *Press) GenerateWrkResult(wrkResult string) (*WRK, error) {
 	return &wrk, nil
 }
 
-func (p *Press)FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, isUpdate bool, connectNum int) error {
+func (p *Press) FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, isUpdate bool, connectNum int) error {
 	//prepare db hostpath
 	for i := 0; i < dbResource.Replicas; i++ {
 		hosts := strings.Split(strings.Replace(cfg.Host, " ", "", -1), ",")
 		for _, host := range hosts {
 			Path := cfg.CassandraData1Path + "/" + strconv.Itoa(i) + "-0"
 			if err = p.CreateOrDeletePvPath(Path, host, cfg.ACTIONCREATE); err != nil {
-				logger.Logger().Errorf("Failed to create %s", Path)
+				logger.Logger().Errorf("Failed to create %s", host+":"+Path)
 				return err
 			}
 		}
 	}
 	//change db resource
-	if err = dbResource.ChangeCPUAndMemory(cfg.KubeconfigPATH); err!= nil {
+	if err = dbResource.ChangeCPUAndMemory(cfg.KubeconfigPATH); err != nil {
 		return err
 	}
-	if !p.WaitForReady(dbResource.ControllerName, dbResource.ControllerType, dbResource.Namespace){
+	if !p.WaitForReady(dbResource.ControllerName, dbResource.ControllerType, dbResource.Namespace) {
 		return errors.New(fmt.Sprintf("%s is not running", dbResource.ControllerName))
 	}
 	//change fp resource
-	if err = fpResource.ChangeCPUAndMemory(cfg.KubeconfigPATH); err!= nil {
+	if err = fpResource.ChangeCPUAndMemory(cfg.KubeconfigPATH); err != nil {
 		return err
 	}
-	if !p.WaitForReady(fpResource.ControllerName, fpResource.ControllerType, fpResource.Namespace){
+	if !p.WaitForReady(fpResource.ControllerName, fpResource.ControllerType, fpResource.Namespace) {
 		return errors.New(fmt.Sprintf("%s is not running", fpResource.ControllerName))
 	}
 	//write csv header
@@ -448,10 +446,10 @@ func (p *Press)FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, i
 		logger.Logger().Error("Failed to create fp tenant")
 		return createTenantError
 	}
-	if err = fpResource.ScaleReplicas(cfg.KubeconfigPATH); err!= nil {
+	if err = fpResource.ScaleReplicas(cfg.KubeconfigPATH); err != nil {
 		return err
 	}
-	if !p.WaitForReady(fpResource.ControllerName, fpResource.ControllerType, fpResource.Namespace){
+	if !p.WaitForReady(fpResource.ControllerName, fpResource.ControllerType, fpResource.Namespace) {
 		return errors.New(fmt.Sprintf("%s is not running", fpResource.ControllerName))
 	}
 	//run wrk
@@ -472,19 +470,19 @@ func (p *Press)FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, i
 				fpResource.Replicas,
 				dbResource.Replicas,
 				connectNum,
-				)
+			)
 			//result report to wechat
 			reportResult := Result{
 				Backfill: useTime,
 				FP: Resource{
 					Replicas: fpResource.Replicas,
-					CPU: fpResource.CPU,
-					Memory: fpResource.Memory,
+					CPU:      fpResource.CPU,
+					Memory:   fpResource.Memory,
 				},
 				DB: Resource{
 					Replicas: dbResource.Replicas,
-					CPU: dbResource.CPU,
-					Memory: dbResource.Memory,
+					CPU:      dbResource.CPU,
+					Memory:   dbResource.Memory,
 				},
 			}
 			logger.Logger().Info("Data warm up")
@@ -507,7 +505,7 @@ func (p *Press)FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, i
 			if err = p.RecordWrkLog(fmt.Sprintf("%s \n %s", title, pressTestOutput)); err != nil {
 				return err
 			}
-			wrk, generateWrkResultError := p.GenerateWrkResult(pressTestOutput);
+			wrk, generateWrkResultError := p.GenerateWrkResult(pressTestOutput)
 			if generateWrkResultError != nil {
 				return generateWrkResultError
 			}
@@ -533,10 +531,8 @@ func (p *Press) FeatureAndDataRangeWithoutUpdate(fpResource, dbResource *Resourc
 	return nil
 }
 
-
-
 func (p *Press) WriteCSVHeader() error {
-	file , openFileError :=os.Open(cfg.CsvFilePath + "/" + cfg.CsvFileName)
+	file, openFileError := os.Open(cfg.CsvFilePath + "/" + cfg.CsvFileName)
 	if openFileError != nil {
 		return openFileError
 	}

@@ -23,7 +23,7 @@ func Prepare() error {
 	if err = logger.Logger().InitLogFile(); err != nil {
 		return err
 	}
-	logger.Logger().Info("----------> Start Press-test")
+	logger.Logger().Info("Start Press-test")
 	if err = utils.CreateFile(); err != nil {
 		return err
 	}
@@ -42,29 +42,29 @@ func Run() error {
 	fpResource := utils.Resource{
 		ControllerName: cfg.FP,
 		ControllerType: cfg.DEPLOY,
-		Replicas: cfg.TotalFPNum,
-		Namespace: cfg.K8sNamespaceCassandra,
+		Replicas:       cfg.TotalFPNum,
+		Namespace:      cfg.K8sNamespaceCassandra,
 		CPU: utils.CPU{
 			Request: "",
-			Limit: "",
+			Limit:   "",
 		},
 		Memory: utils.Memory{
 			Request: "",
-			Limit: "",
+			Limit:   "",
 		},
 	}
 	dbResource := utils.Resource{
 		ControllerName: cfg.CASSANDRA,
-	    ControllerType: cfg.STS,
-	    Replicas: cfg.TotalCassandraNum,
-	    Namespace: cfg.K8sNamespaceCassandra,
+		ControllerType: cfg.STS,
+		Replicas:       cfg.TotalCassandraNum,
+		Namespace:      cfg.K8sNamespaceCassandra,
 		CPU: utils.CPU{
 			Request: "",
-			Limit: "",
+			Limit:   "",
 		},
 		Memory: utils.Memory{
 			Request: "",
-			Limit: "",
+			Limit:   "",
 		},
 	}
 	if err = press.FeatureAndDataRangeWithUpdate(&fpResource, &dbResource, cfg.IsUpdate, cfg.ConnectNumDefault); err != nil {

@@ -8,7 +8,7 @@ const (
 
 	//ssh-user
 	User = "datavisor"
-	Key = "/Users/koko/.ssh/id_rsa"
+	Key  = "/Users/koko/.ssh/id_rsa"
 
 	KubeconfigPATH = "/Users/koko/.ssh/188-kubeconfig"
 
@@ -34,7 +34,7 @@ const (
 	FpPodDefault = 1
 
 	//# 随着cassandra或yugabytedb pod数量的增加，fp pod增加个数
-	FpPodAdd =  1
+	FpPodAdd = 1
 
 	//# connect初始数
 	//# 'CONNECT_NUM_ADD': 30,
@@ -47,12 +47,11 @@ const (
 	//#数据维度
 	DataRange = "7"
 
-
 	Host = "10.1.9.188, 10.1.9.189"
 
 	//# cassandra-data path
-	CassandraDataPath = "/home/datavisor/gaohui/boc/cassandra/"
-	CassandraData1Path = "/home/datavisor/gaohui/boc/cassandra/"
+	CassandraDataPath  = "/home/datavisor/gaohui/boc1/cassandra"
+	CassandraData1Path = "/home/datavisor/gaohui/boc1/cassandra"
 
 	//#fp最终数量
 	TotalFPNum = 1
@@ -61,35 +60,34 @@ const (
 	TotalCassandraNum = 1
 
 	//# featureID List
- 	FeatureList = "1"
+	FeatureList = "1"
 	//# best: 8t48c
 	//# connect增加数
 	ConnectNumDefault = 8
 
 	//# wrk 压测脚本路径
 	WrkScript = "/Users/koko/go/src/BOC/press-test/wrk_script/test.sh"
-	LogFile = ""
+	LogFile   = "/Users/koko/go/src/press-test/logs/test.log"
 	//# 压测结果保存位置
- 	CsvFilePath = ""
-	CsvFileName = "wrk_result.csv"
-	WrkRawlogPath = ""
-	WrkRawlog = "wrk_rawlog"
+	CsvFilePath      = ""
+	CsvFileName      = "wrk_result.csv"
+	WrkRawlogPath    = ""
+	WrkRawlog        = "wrk_rawlog"
 	SchedulerLogPath = ""
-	WrkLogPath = ""
+	WrkLogPath       = ""
 
-
-	DEPLOY = "deploy"
-	FP = "fp"
-	STS = "sts"
-	YB = "yb-tserver"
-	KAFKA = "kafka"
-	CASSANDRA = "cassandra"
-	ACTIONDELETE = "delete"
-	ACTIONCREATE = "create"
+	DEPLOY          = "deploy"
+	FP              = "fp"
+	STS             = "sts"
+	YB              = "yb-tserver"
+	KAFKA           = "kafka"
+	CASSANDRA       = "cassandra"
+	ACTIONDELETE    = "delete"
+	ACTIONCREATE    = "create"
 	CASSANDRAPREFIX = "cassandra-data"
-	YBPREFIX = "yb-"
-	SSHPASSWD = "datavisor"
-	SSHUSER= "datavisor"
-	SSHPORT = "22"
-	IsUpdate = true
+	YBPREFIX        = "yb-"
+	SSHPASSWD       = "datavisor"
+	SSHUSER         = "datavisor"
+	SSHPORT         = "22"
+	IsUpdate        = true
 )

@@ -10,13 +10,13 @@ import (
 )
 
 var (
-	f *os.File
+	f     *os.File
 	Error error
-	err error
+	err   error
 )
 
 type Log struct {
-	lock *sync.Mutex
+	lock sync.Mutex
 	file *string
 }
 
@@ -35,10 +35,10 @@ func Logger() *Log {
 	return &Log{file: &file}
 }
 
-func (l *Log)Info(args interface{}){
+func (l *Log) Info(args interface{}) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	f, err = os.Open(*l.file)
+	f, err = os.OpenFile(*l.file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|os.O_APPEND, 0664)
 	if err != nil {
 		panic(err)
 	}
@@ -49,13 +49,15 @@ func (l *Log)Info(args interface{}){
 		panic(err)
 	}
 	_ = writer.Flush()
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 }
 
-func (l *Log)Infof(format string, args interface{}){
+func (l *Log) Infof(format string, args interface{}) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	f, err = os.Open(*l.file)
+	f, err = os.OpenFile(*l.file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|os.O_APPEND, 0664)
 	if err != nil {
 		panic(err)
 	}
@@ -69,10 +71,10 @@ func (l *Log)Infof(format string, args interface{}){
 	defer f.Close()
 }
 
-func (l *Log)Warn(args interface{}){
+func (l *Log) Warn(args interface{}) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	f, err = os.Open(*l.file)
+	f, err = os.OpenFile(*l.file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|os.O_APPEND, 0664)
 	if err != nil {
 		panic(err)
 	}
@@ -86,10 +88,10 @@ func (l *Log)Warn(args interface{}){
 	defer f.Close()
 }
 
-func (l *Log)Warnf(format string, args interface{}){
+func (l *Log) Warnf(format string, args interface{}) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	f, err = os.Open(*l.file)
+	f, err = os.OpenFile(*l.file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|os.O_APPEND, 0664)
 	if err != nil {
 		panic(err)
 	}
@@ -103,10 +105,10 @@ func (l *Log)Warnf(format string, args interface{}){
 	defer f.Close()
 }
 
-func (l *Log)Error(args interface{}){
+func (l *Log) Error(args interface{}) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	f, err = os.Open(*l.file)
+	f, err = os.OpenFile(*l.file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|os.O_APPEND, 0664)
 	if err != nil {
 		panic(err)
 	}
@@ -120,10 +122,10 @@ func (l *Log)Error(args interface{}){
 	defer f.Close()
 }
 
-func (l *Log)Errorf(format string, args interface{}){
+func (l *Log) Errorf(format string, args interface{}) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
-	f, err = os.Open(*l.file)
+	f, err = os.OpenFile(*l.file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC|os.O_APPEND, 0664)
 	if err != nil {
 		panic(err)
 	}
@@ -137,9 +139,9 @@ func (l *Log)Errorf(format string, args interface{}){
 	defer f.Close()
 }
 
-func (l *Log)InitLogFile() error {
+func (l *Log) InitLogFile() error {
 	_, err := os.Stat(*l.file)
-	if os.IsNotExist(err){
+	if os.IsNotExist(err) {
 		err = createFile(*l.file)
 		if err != nil {
 			return err
