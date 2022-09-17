@@ -34,8 +34,6 @@ type fpTenant struct {
 }
 
 type execute interface {
-	Shell
-	SendWechat(message string) error
 	CreateOrDeletePvPath(path, host, action string) error
 	CreateFPTanant() (bool, error)
 	WaitKafkaConsumer() bool
@@ -59,28 +57,6 @@ func NewPress() execute {
 	return &Press{
 		SSHClient: sshClient,
 	}
-}
-
-func (p *Press) SendWechat(message string) error {
-	data := map[string]interface{}{}
-	mentioned_list := []string{"@all"}
-	text := make(map[string]interface{})
-	text["content"] = message
-	text["mentioned_list"] = mentioned_list
-	data["msgtype"] = "text"
-	data["text"] = text
-	body, _ := json.Marshal(data)
-	response, httpError := http.Post(cfg.WEBHOOK_URL, "text", bytes.NewReader(body))
-	if httpError != nil {
-		return httpError
-	}
-	if response.StatusCode != 200 {
-		return errors.New("send wechat failed: " + message)
-	}
-	defer func() {
-		_ = response.Body.Close()
-	}()
-	return nil
 }
 
 func (p *Press) CreateOrDeletePvPath(path, host, action string) error {
@@ -143,7 +119,7 @@ func (p *Press) CreateFPTanant() (bool, error) {
 func (p *Press) WaitKafkaConsumer() bool {
 	for {
 		cmd := fmt.Sprintf("kubectl --kubeconfig=%s exec -it -n %s kafka-0 -- kafka-consumer-groups --bootstrap-server localhost:9092 --group  velocity --describe | grep velocity.%s | awk '{{if ($5 != 0) {{print $5}}}}' | wc -l '''\n", cfg.KubeconfigPATH, cfg.K8sNamespaceCassandra, cfg.Client)
-		waitKafkaConsumerResult, waitKafkaConsumerCommand := p.Command(cmd)
+		waitKafkaConsumerResult, waitKafkaConsumerCommand := GenericFactory().Command(cmd)
 		if waitKafkaConsumerCommand != nil {
 			return false
 		}
@@ -215,7 +191,7 @@ func (p *Press) DeletePV(db string) bool {
 		grepKey = "yb-"
 	}
 	//get po by kubectl
-	pods, getPodsErr := p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get po | grep %s | awk '{print $1}'", cfg.KubeconfigPATH, namespace, grepKey))
+	pods, getPodsErr := GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get po | grep %s | awk '{print $1}'", cfg.KubeconfigPATH, namespace, grepKey))
 	if getPodsErr != nil {
 		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Error("failed to get pods")
 		return false
@@ -229,7 +205,7 @@ func (p *Press) DeletePV(db string) bool {
 		return true
 	}
 	if db == cfg.CASSANDRA {
-		_, deletePVCommandError := p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s scale statefulset %s --replicas 0", cfg.KubeconfigPATH, namespace, db))
+		_, deletePVCommandError := GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s scale statefulset %s --replicas 0", cfg.KubeconfigPATH, namespace, db))
 		if deletePVCommandError != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Error("failed to scale cassandra to 0")
 			return false
@@ -241,7 +217,7 @@ func (p *Press) DeletePV(db string) bool {
 	Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Info("wait for cassandra to scale 0 or delete yb")
 	n := 0
 	for {
-		getPodsResult, getPodsError := p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get po | grep %s | awk '{print $1}'", cfg.KubeconfigPATH, namespace, grepKey))
+		getPodsResult, getPodsError := GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get po | grep %s | awk '{print $1}'", cfg.KubeconfigPATH, namespace, grepKey))
 		if getPodsError != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Error("failed to get pods for waiting")
 			return false
@@ -262,7 +238,7 @@ func (p *Press) DeletePV(db string) bool {
 	for _, pod := range Pods {
 		//Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Infof("delete pvc&pv for %s", pod)
 		//delete pvc
-		_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s delete pvc %s", cfg.KubeconfigPATH, namespace, prefix+"-"+pod))
+		_, err = GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s delete pvc %s", cfg.KubeconfigPATH, namespace, prefix+"-"+pod))
 		if err != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Errorf("failed to delete pvc for %s", pod)
 			return false
@@ -280,7 +256,7 @@ func (p *Press) DeletePV(db string) bool {
 		}
 
 		//delete pv
-		_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s delete pv %s", cfg.KubeconfigPATH, namespace, pvName))
+		_, err = GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s delete pv %s", cfg.KubeconfigPATH, namespace, pvName))
 		if err != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Errorf("failed to delete pv for %s", pod)
 			return false
@@ -297,7 +273,7 @@ func (p *Press) DeletePV(db string) bool {
 	//deploy yb
 	if db == cfg.YB {
 		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Info("start to deploy yb")
-		_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s apply -f  yb.yaml", cfg.KubeconfigPATH, namespace))
+		_, err = GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s apply -f  yb.yaml", cfg.KubeconfigPATH, namespace))
 		if err != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Error("failed to deploy yb")
 			return false
@@ -317,7 +293,7 @@ func (p *Press) DeletePV(db string) bool {
 }
 
 func (p *Press) RestartFP(namespace string) bool {
-	_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s rollout restart deploy fp-deployment", cfg.KubeconfigPATH, namespace))
+	_, err = GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s rollout restart deploy fp-deployment", cfg.KubeconfigPATH, namespace))
 	if err != nil {
 		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Error("failed to restart fp")
 		return false
@@ -334,7 +310,7 @@ func (p *Press) RestartFP(namespace string) bool {
 func (p *Press) WaitForReady(deployName, deployType, namespace string) bool {
 	n := 0
 	for {
-		getDeployResult, getDeployErr := p.Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get %s %s | awk '{print $2}'", cfg.KubeconfigPATH, namespace, deployType, deployName))
+		getDeployResult, getDeployErr := GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig %s -n %s get %s %s | awk '{print $2}'", cfg.KubeconfigPATH, namespace, deployType, deployName))
 		if getDeployErr != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Errorf("failed to get %s for running", deployName)
 			return false
@@ -408,7 +384,7 @@ func (p *Press) GenerateWrkResult(wrkResult string) (*WRK, error) {
 func (p *Press) CopyTemplate(template, index string) (string, error) {
 	templateFile := strings.Split(template, ".")[0] + "-" + index + ".yaml"
 	pvFile := cfg.CassandraData1Path + templateFile
-	_, err = p.Command(fmt.Sprintf("copy %s %s", template, pvFile))
+	_, err = GenericFactory().Command(fmt.Sprintf("copy %s %s", template, pvFile))
 	if err != nil {
 		return "", err
 	}
@@ -442,7 +418,7 @@ func (p *Press) FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, 
 			ChangeStorageClassName(pvName, cfg.K8sNamespaceCassandra)
 
 		//create pv
-		_, err = p.Command(fmt.Sprintf("kubectl --kubeconfig=%s -n %s apply -f %s", cfg.KubeconfigPATH, cfg.K8sNamespaceCassandra, newfile))
+		_, err = GenericFactory().Command(fmt.Sprintf("kubectl --kubeconfig=%s -n %s apply -f %s", cfg.KubeconfigPATH, cfg.K8sNamespaceCassandra, newfile))
 		if err != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Warnf("failed to create pv %s", pvName)
 			return err
@@ -513,7 +489,7 @@ func (p *Press) FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, 
 				},
 			}
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Info("data warm up")
-			_, commandError := p.Command(fmt.Sprintf("sh %s %d 2 %s %s %v", cfg.WrkScript, connectNum, featureRange, dataRange, isUpdate))
+			_, commandError := GenericFactory().Command(fmt.Sprintf("sh %s %d 2 %s %s %v", cfg.WrkScript, connectNum, featureRange, dataRange, isUpdate))
 			if commandError != nil {
 				return commandError
 			}
@@ -525,7 +501,7 @@ func (p *Press) FeatureAndDataRangeWithUpdate(fpResource, dbResource *Resource, 
 			}
 
 			//start press-test
-			pressTestOutput, wrkCommandError := p.Command(fmt.Sprintf("sh %s %d 2 %s %s %v", cfg.WrkScript, connectNum, featureRange, dataRange, isUpdate))
+			pressTestOutput, wrkCommandError := GenericFactory().Command(fmt.Sprintf("sh %s %d 2 %s %s %v", cfg.WrkScript, connectNum, featureRange, dataRange, isUpdate))
 			if wrkCommandError != nil {
 				return wrkCommandError
 			}

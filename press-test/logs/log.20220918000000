@@ -1,0 +1,16 @@
+2022-09-18 01:24:48 [utils.go:187] [INFO] [gaohuitest] start delete pv cassandra
+2022-09-18 01:24:51 [utils.go:207] [INFO] [gaohuitest] trying to delete pv for pods [cassandra-0]
+2022-09-18 01:24:51 [utils.go:222] [INFO] [gaohuitest] wait for cassandra to scale 0 or delete yb
+2022-09-18 01:25:03 [utils.go:240] [INFO] [gaohuitest] scale cassandra to 0 or delete yb completed
+2022-09-18 01:25:13 [utils.go:248] [ERRO] [gaohuitest] failed to delete pvc for cassandra-0
+2022-09-18 01:50:39 [utils.go:183] [INFO] [gaohuitest] start delete pv cassandra
+2022-09-18 01:50:42 [utils.go:203] [INFO] [gaohuitest] trying to delete pv for pods []
+2022-09-18 01:50:43 [utils.go:218] [INFO] [gaohuitest] wait for cassandra to scale 0 or delete yb
+2022-09-18 01:50:43 [utils.go:236] [INFO] [gaohuitest] scale cassandra to 0 or delete yb completed
+2022-09-18 01:50:44 [utils.go:89] [INFO] [gaohuitest] create 10.1.9.188:/home/datavisor/gaohui/boc1/cassandra/0-0 successfully
+2022-09-18 01:50:45 [utils.go:89] [INFO] [gaohuitest] create 10.1.9.189:/home/datavisor/gaohui/boc1/cassandra/0-0 successfully
+2022-09-18 01:52:49 [utils.go:182] [INFO] [gaohuitest] start delete pv cassandra
+2022-09-18 01:52:50 [utils.go:202] [INFO] [gaohuitest] trying to delete pv for pods [cassandra-0]
+2022-09-18 01:52:50 [utils.go:217] [INFO] [gaohuitest] wait for cassandra to scale 0 or delete yb
+2022-09-18 01:53:02 [utils.go:235] [INFO] [gaohuitest] scale cassandra to 0 or delete yb completed
+2022-09-18 01:53:12 [utils.go:243] [ERRO] [gaohuitest] failed to delete pvc for cassandra-0

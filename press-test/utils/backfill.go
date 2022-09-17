@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/RealGaohui/urlBuilder"
+	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"io/ioutil"
 	"net/http"
@@ -67,7 +69,6 @@ type check interface {
 
 type Interface interface {
 	DoBackfill() (int, error)
-	Alert
 }
 
 func NewID(id int) check {
@@ -100,7 +101,10 @@ func (i *ID) CheckBackfillFinish() bool {
 		return false
 	}
 	if gjson.Get(string(resp), "status").String() == "COMPLETED" {
-		Log.Infof("task %d compelted", int(*i))
+		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Infof("task %d compelted", int(*i))
+		if err = GenericFactory().SendWechat(fmt.Sprintf("task %d compelted", int(*i))); err != nil {
+			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Warn("backfill completed, but failed to send result to wechat")
+		}
 		return true
 	}
 	return false
@@ -136,28 +140,6 @@ func (b *Backfill) DoBackfill() (check, error) {
 		return Check, errors.New("Invalid Json")
 	}
 	id, _ := strconv.Atoi(gjson.Get(string(resp), "id").String())
-	Log.Info("create successfully")
+	Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Info("create/run backfill task successfully")
 	return NewID(id), nil
-}
-
-func (b *Backfill) SendWechat(message string) error {
-	data := map[string]interface{}{}
-	mentioned_list := []string{"@all"}
-	text := make(map[string]interface{})
-	text["content"] = message
-	text["mentioned_list"] = mentioned_list
-	data["msgtype"] = "text"
-	data["text"] = text
-	body, _ := json.Marshal(data)
-	response, err1 := http.Post(cfg.WEBHOOK_URL, "text", bytes.NewReader(body))
-	if err1 != nil {
-		return err1
-	}
-	if response.StatusCode != 200 {
-		return errors.New("send wechat failed: " + message)
-	}
-	defer func() {
-		_ = response.Body.Close()
-	}()
-	return nil
 }

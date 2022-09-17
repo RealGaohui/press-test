@@ -2,11 +2,8 @@ package utils
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	cfg "press-test/config"
 	"strconv"
@@ -15,25 +12,24 @@ import (
 )
 
 type WRK struct {
-	Total    string  `json:"total"`
-	Avg      string `json:"avg"`
-	Stdev    string `json:"stdev"`
-	Max      string `json:"max"`
-	P50      string `json:"p50"`
-	P75      string `json:"p75"`
-	P90      string `json:"p90"`
-	P95      string `json:"p95"`
-	P99      string `json:"p99"`
-	Connections int `json:"connections"`
-	QPS      string `json:"qps"`
-	Timeout  string `json:"timeout"`
-	Gen      []string `json:"gen"`
+	Total       string   `json:"total"`
+	Avg         string   `json:"avg"`
+	Stdev       string   `json:"stdev"`
+	Max         string   `json:"max"`
+	P50         string   `json:"p50"`
+	P75         string   `json:"p75"`
+	P90         string   `json:"p90"`
+	P95         string   `json:"p95"`
+	P99         string   `json:"p99"`
+	Connections int      `json:"connections"`
+	QPS         string   `json:"qps"`
+	Timeout     string   `json:"timeout"`
+	Gen         []string `json:"gen"`
 }
 
 type Reporter interface {
 	Report(result *Result) error
 	WriteToCSV(title string) error
-	Alert
 }
 
 func (w *WRK) Report(result *Result) error {
@@ -54,7 +50,7 @@ func (w *WRK) Report(result *Result) error {
 		} else if key == "backfill" {
 			val := value.(time.Duration)
 			content = append(content, fmt.Sprintf("backfill: <font color=\"comment\"> 耗时%vs </font>", val.Seconds()))
-		}else {
+		} else {
 			val := value.(Resource)
 			content = append(content, fmt.Sprintf(">%s: <font color=\"comment\"> replicas: %s, cpu: %s, memory: %s} </font>",
 				key,
@@ -65,8 +61,8 @@ func (w *WRK) Report(result *Result) error {
 			)
 		}
 	}
-	content = append(content,"")
-	content = append(content,"压测结果: ")
+	content = append(content, "")
+	content = append(content, "压测结果: ")
 	content = append(content, fmt.Sprintf(">Total Requests: <font color=\"info\"> %s </font>", w.Total))
 	if w.Timeout == "" {
 		w.Timeout = "0"
@@ -82,13 +78,13 @@ func (w *WRK) Report(result *Result) error {
 	content = append(content, fmt.Sprintf("P95: <font color=\"info\"> %s </font>", w.P95))
 	content = append(content, fmt.Sprintf("P99: <font color=\"info\"> %s </font>", w.P99))
 	w.Gen = content
-	if err = w.SendWechat("Report"); err != nil {
+	if err = GenericFactory().SendWechat("Report", content); err != nil {
 		return err
 	}
 	return nil
 }
 
-//TODO
+// TODO
 func (w *WRK) WriteToCSV(title string, result *Result) error {
 	file := cfg.CsvFilePath + "/" + cfg.CsvFileName
 	f, openFileError := os.Open(file)
@@ -130,27 +126,5 @@ func (w *WRK) WriteToCSV(title string, result *Result) error {
 		return err
 	}
 	_ = f.Close()
-	return nil
-}
-
-func (w *WRK) SendWechat(message string) error {
-	data := map[string]interface{}{}
-	mentioned_list := []string{"@all"}
-	text := make(map[string]interface{})
-	text["content"] = w.Gen
-	text["mentioned_list"] = mentioned_list
-	data["msgtype"] = "text"
-	data["text"] = text
-	body, _ := json.Marshal(data)
-	response, err1 := http.Post(cfg.WEBHOOK_URL, "text", bytes.NewReader(body))
-	if err1 != nil {
-		return err1
-	}
-	if response.StatusCode != 200 {
-		return errors.New("Failed to send wechat")
-	}
-	defer func() {
-		_ = response.Body.Close()
-	}()
 	return nil
 }
