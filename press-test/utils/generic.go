@@ -24,7 +24,7 @@ func (g *generic[gen]) SendWechat(message string, xargs ...interface{}) error {
 	mentioned_list := []string{"@all"}
 	text := make(map[string]interface{})
 	if len(xargs) != 0 {
-		text["content"] = message
+		text["content"] = xargs
 	} else {
 		text["content"] = message
 	}
