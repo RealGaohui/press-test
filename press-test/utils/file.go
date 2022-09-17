@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	cfg "press-test/config"
-	logger "press-test/log"
 )
 
 func CreateFile() error {
@@ -24,10 +23,10 @@ func CreateFile() error {
 }
 
 func initPath(path string) error {
-	if os.IsNotExist(err){
+	if os.IsNotExist(err) {
 		err = os.MkdirAll(path, os.ModePerm)
 		if err != nil {
-			logger.Logger().Errorf("Failed to create directory %s", path)
+			Log.Errorf("Failed to create directory %s", path)
 			return err
 		}
 	}
@@ -36,7 +35,7 @@ func initPath(path string) error {
 
 func initFile(path string) error {
 	_, err = os.Stat(path)
-	if os.IsNotExist(err){
+	if os.IsNotExist(err) {
 		err = create(path)
 		if err != nil {
 			return err

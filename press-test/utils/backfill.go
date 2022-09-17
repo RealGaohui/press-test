@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	cfg "press-test/config"
-	logger "press-test/log"
 	"strconv"
 )
 
@@ -101,7 +100,7 @@ func (i *ID) CheckBackfillFinish() bool {
 		return false
 	}
 	if gjson.Get(string(resp), "status").String() == "COMPLETED" {
-		logger.Logger().Infof("task %d compelted", int(*i))
+		Log.Infof("task %d compelted", int(*i))
 		return true
 	}
 	return false
@@ -109,7 +108,7 @@ func (i *ID) CheckBackfillFinish() bool {
 
 func (b *Backfill) DoBackfill() (check, error) {
 	var Check check
-	logger.Logger().Infof("create backfill task: %s", b.backfill.Name)
+	Log.Infof("create backfill task: %s", b.backfill.Name)
 	URL := urlBuilder.URLBuilder().
 		SetBase(cfg.FpBaseUrl).
 		SetPath("/").
@@ -137,7 +136,7 @@ func (b *Backfill) DoBackfill() (check, error) {
 		return Check, errors.New("Invalid Json")
 	}
 	id, _ := strconv.Atoi(gjson.Get(string(resp), "id").String())
-	logger.Logger().Info("create successfully")
+	Log.Info("create successfully")
 	return NewID(id), nil
 }
 

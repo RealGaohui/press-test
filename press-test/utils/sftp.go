@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"net"
 	cfg "press-test/config"
@@ -9,10 +8,16 @@ import (
 )
 
 var (
-	sftpClient *sftp.Client
+	sshClient *ssh.Client
 )
 
-func SftpConnect(host string) (*sftp.Client, error){
+type IP string
+
+type Connection interface {
+	SSHConnect() (*ssh.Client, error)
+}
+
+func (i *IP) SSHConnect() (*ssh.Client, error) {
 	auth := make([]ssh.AuthMethod, 0)
 	auth = append(auth, ssh.Password(cfg.SSHPASSWD))
 	clientConfig := &ssh.ClientConfig{
@@ -23,17 +28,10 @@ func SftpConnect(host string) (*sftp.Client, error){
 			return nil
 		},
 	}
-	addr := host + ":" + cfg.SSHPORT
-	sshClient, err1 := ssh.Dial("tcp", addr, clientConfig)
-	if err1 != nil {
-		return sftpClient, err
+	addr := string(*i) + ":" + cfg.SSHPORT
+	sshClient, err = ssh.Dial("tcp", addr, clientConfig)
+	if err != nil {
+		return sshClient, err
 	}
-	//create client
-	if sftpClient, err = sftp.NewClient(sshClient); err != nil {
-		return sftpClient, nil
-	}
-	return sftpClient, nil
+	return sshClient, nil
 }
-
-
-

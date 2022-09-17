@@ -50,8 +50,8 @@ const (
 	Host = "10.1.9.188, 10.1.9.189"
 
 	//# cassandra-data path
-	CassandraDataPath  = "/home/datavisor/gaohui/boc1/cassandra"
-	CassandraData1Path = "/home/datavisor/gaohui/boc1/cassandra"
+	CassandraDataPath  = "\\/home\\/datavisor\\/gaohui\\/boc1\\/cassandra\\/"
+	CassandraData1Path = "/home/datavisor/gaohui/boc1/cassandra/"
 
 	//#fp最终数量
 	TotalFPNum = 1
@@ -67,7 +67,7 @@ const (
 
 	//# wrk 压测脚本路径
 	WrkScript = "/Users/koko/go/src/BOC/press-test/wrk_script/test.sh"
-	LogFile   = "/Users/koko/go/src/press-test/logs/test.log"
+	Logpath   = "/Users/koko/go/src/press-test/logs"
 	//# 压测结果保存位置
 	CsvFilePath      = ""
 	CsvFileName      = "wrk_result.csv"
