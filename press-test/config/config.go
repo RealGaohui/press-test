@@ -3,11 +3,11 @@ package config
 const (
 
 	//企业微信webhook地址
-	WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=9e380bb9-e88d-4e29-a79c-ef6ce98c1aac"
-	//'WEBHOOK_URL':'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=2a3e2425-f8ae-4fce-af4c-449e497e88ea',
+	WEBHOOK_URL = ""
+	//'WEBHOOK_URL':'',
 
 	//ssh-user
-	User = "datavisor"
+	User = ""
 	Key  = "/Users/koko/.ssh/id_rsa"
 
 	KubeconfigPATH = "/Users/koko/.ssh/188-kubeconfig"
@@ -23,7 +23,7 @@ const (
 	K8sNamespaceCassandra = "boc"
 
 	//# fp base url
-	FpBaseUrl = "http://10.1.9.188:11149/api-1.0-SNAPSHOT"
+	FpBaseUrl = ""
 
 	//# cassandra或yugabytedb pod数量, 每个表示一组压测
 	DB_POD_RANGE = "1"
@@ -86,8 +86,8 @@ const (
 	ACTIONCREATE    = "create"
 	CASSANDRAPREFIX = "cassandra-data"
 	YBPREFIX        = "yb-"
-	SSHPASSWD       = "datavisor"
-	SSHUSER         = "datavisor"
+	SSHPASSWD       = ""
+	SSHUSER         = ""
 	SSHPORT         = "22"
 	IsUpdate        = true
 )
