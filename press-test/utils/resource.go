@@ -76,14 +76,14 @@ func (r *Resource) ScaleReplicas(kubeconfig string) error {
 	}
 	deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 	statefulsetRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}
-	if r.ControllerType == "Deployment" {
+	if r.ControllerType == "deploy" {
 		controllerType = deploymentRes
 	}
-	if r.ControllerType == "StatefulSet" {
+	if r.ControllerType == "sts" {
 		controllerType = statefulsetRes
 	}
 	err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		result, err = client.Resource(deploymentRes).Namespace(r.Namespace).Get(context.TODO(), r.ControllerName, metav1.GetOptions{})
+		result, err = client.Resource(controllerType).Namespace(r.Namespace).Get(context.TODO(), r.ControllerName, metav1.GetOptions{})
 		if err != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Error("failed to get k8s resource")
 			err = GenericFactory().SendWechat("failed to get k8s resource")
@@ -92,7 +92,7 @@ func (r *Resource) ScaleReplicas(kubeconfig string) error {
 			}
 			return err
 		}
-		if err = unstructured.SetNestedField(result.Object, r.Replicas, "spec", "replicas"); err != nil {
+		if err = unstructured.SetNestedField(result.Object, int64(r.Replicas), "spec", "replicas"); err != nil {
 			Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Error("failed to set replicas")
 			err = GenericFactory().SendWechat("failed to set replicas")
 			if err != nil {
