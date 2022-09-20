@@ -84,7 +84,6 @@ func (w *WRK) Report(result *Result) error {
 	return nil
 }
 
-// TODO
 func (w *WRK) WriteToCSV(title string, result *Result) error {
 	file := cfg.CsvFilePath + "/" + cfg.CsvFileName
 	f, openFileError := os.Open(file)
@@ -92,18 +91,6 @@ func (w *WRK) WriteToCSV(title string, result *Result) error {
 		return openFileError
 	}
 	writer := bufio.NewWriter(f)
-	//fpConfig := result.FP
-	//fpReplicas := fpConfig.Replicas
-	//fpCPU := fpConfig.CPU
-	//fpMemory := fpConfig.Memory
-
-	//dbConfig := result.DB
-	//if result.DB.ControllerName == "" {
-	//	result.DB.ControllerName = "yb-tserver"
-	//}
-	//dbReplicas := dbConfig.Replicas
-	//dbCPU := dbConfig.CPU
-	//dbmemory := dbConfig.Memory
 	tmpRow := make([]string, 10)
 	tmpRow = append(tmpRow, title)
 	tmpRow = append(tmpRow, strconv.Itoa(result.WRK.Connections))

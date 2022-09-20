@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"errors"
+	"golang.org/x/net/context"
 	cfg "press-test/config"
 	"press-test/utils"
 )
@@ -10,36 +10,36 @@ var (
 	err error
 )
 
-func Prepare() error {
-	if err = utils.InitLog(); err != nil {
+func Prepare(tenantContext context.Context) error {
+	if err = utils.InitLog(tenantContext); err != nil {
 		return err
 	}
 	if err = utils.CreateFile(); err != nil {
 		return err
 	}
-	if err = Run(); err != nil {
+	if err = Run(tenantContext); err != nil {
 		return err
 	}
 	return nil
 }
 
-func Run() error {
-	press := utils.NewPress()
-	if !press.DeletePV("cassandra") {
-		return errors.New("failed to run press-test")
-	}
+func Run(tenantContext context.Context) error {
+	press := utils.NewPress(tenantContext)
+	//if !press.DeletePV(tenantContext, cfg.CASSANDRA) {
+	//	return errors.New("failed to run press-test")
+	//}
 	fpResource := utils.Resource{
 		ControllerName: cfg.FP,
 		ControllerType: cfg.DEPLOY,
 		Replicas:       cfg.TotalFPNum,
 		Namespace:      cfg.K8sNamespaceCassandra,
 		CPU: utils.CPU{
-			Request: "",
-			Limit:   "",
+			Request: "2",
+			Limit:   "2",
 		},
 		Memory: utils.Memory{
-			Request: "",
-			Limit:   "",
+			Request: "4",
+			Limit:   "4",
 		},
 	}
 	dbResource := utils.Resource{
@@ -48,15 +48,15 @@ func Run() error {
 		Replicas:       cfg.TotalCassandraNum,
 		Namespace:      cfg.K8sNamespaceCassandra,
 		CPU: utils.CPU{
-			Request: "",
-			Limit:   "",
+			Request: "2",
+			Limit:   "2",
 		},
 		Memory: utils.Memory{
-			Request: "",
-			Limit:   "",
+			Request: "4",
+			Limit:   "4",
 		},
 	}
-	if err = press.FeatureAndDataRangeWithUpdate(&fpResource, &dbResource, cfg.IsUpdate, cfg.ConnectNumDefault); err != nil {
+	if err = press.FeatureAndDataRangeWithUpdate(tenantContext, &fpResource, &dbResource, cfg.IsUpdate, cfg.ConnectNumDefault); err != nil {
 		return err
 	}
 

@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
+	"os"
 	"path/filepath"
 	cfg "press-test/config"
 	"runtime"
@@ -20,10 +22,17 @@ func GetLogger() *logrus.Logger {
 	return Log
 }
 
-func InitLog() error {
+func InitLog(ctx context.Context) error {
 	Log = logrus.New()
 	Log.Formatter = &logrus.TextFormatter{}
-	hook := NewLfsHook(filepath.Join(cfg.Logpath, "log"), 0, 5)
+	logPath := cfg.Logpath + ctx.Value("tenant").(string)
+	if !IsExists(logPath) {
+		err = os.Mkdir(logPath, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	hook := NewLfsHook(filepath.Join(logPath, "log"), 0, 5)
 	Log.AddHook(hook)
 	Log.SetFormatter(formatter(true))
 	Log.SetReportCaller(true)

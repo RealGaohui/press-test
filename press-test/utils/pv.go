@@ -39,9 +39,11 @@ func (p *PV) ChangePVName(name string) *PV {
 	_, err = GenericFactory().Command(executeCommand)
 	if err != nil {
 		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Warnf("failed to change pv name for %s", name)
-		return &PV{}
+		return &PV{
+			file: p.file,
+		}
 	}
-	return &PV{}
+	return &PV{file: p.file}
 }
 
 func (p *PV) ChangePVPath(pvname, path string) *PV {
@@ -56,7 +58,7 @@ func (p *PV) ChangePVPath(pvname, path string) *PV {
 		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Warnf("failed to change pv host path for %s", pvname)
 		return &PV{}
 	}
-	return &PV{}
+	return &PV{file: p.file}
 }
 
 func (p *PV) ChangePVHost(pvname, host string) *PV {
@@ -71,7 +73,7 @@ func (p *PV) ChangePVHost(pvname, host string) *PV {
 		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Warnf("failed to change pv host for %s", pvname)
 		return &PV{}
 	}
-	return &PV{}
+	return &PV{file: p.file}
 }
 
 func (p *PV) ChangeStorageClassName(pvname, ns string) *PV {
@@ -87,5 +89,5 @@ func (p *PV) ChangeStorageClassName(pvname, ns string) *PV {
 		Log.WithFields(logrus.Fields{"tenant": cfg.Client}).Warnf("failed to change storage class name for %s", pvname)
 		return &PV{}
 	}
-	return &PV{}
+	return &PV{file: p.file}
 }
