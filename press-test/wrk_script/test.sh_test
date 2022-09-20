@@ -1,8 +1,0 @@
-#!/bin/sh
-
-basepath=$(cd `dirname $0`; pwd)
-cd $basepath
-
-connect_num=$1
-stress_time=$2
-wrk --latency -t 4 -c $connect_num -d ${stress_time}s -s script.lua -- "http://k8s-us-dev.dv-api.com" "/yuga1/fp-rt/api-1.0-SNAPSHOT/yb6/run-rule/compute-features/external/rule-set?setId=2&featureTagName=EXPENSIVE_COMPUTE"
