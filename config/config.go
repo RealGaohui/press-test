@@ -3,27 +3,27 @@ package config
 const (
 
 	//企业微信webhook地址
-	WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=9e380bb9-e88d-4e29-a79c-ef6ce98c1aac"
-	//'WEBHOOK_URL':'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=2a3e2425-f8ae-4fce-af4c-449e497e88ea',
+	WEBHOOK_URL = ""
+	//'WEBHOOK_URL':'',
 
 	//ssh-user
 	User = "datavisor"
-	Key  = "/Users/koko/.ssh/id_rsa"
+	Key  = ""
 
-	KubeconfigPATH = "/Users/koko/.ssh/188-kubeconfig"
+	KubeconfigPATH = ""
 
 	//cassandra-template path
-	TemplatePath = "/Users/koko/go/src/BOC/press-test/schedule_script/cassandra-pv.yaml"
+	TemplatePath = ""
 
-	K8sNamespace = "yuga1"
+	K8sNamespace = ""
 
-	Client = "gaohuitest"
+	Client = ""
 
 	//# k8s namespace cassandra名称
-	K8sNamespaceCassandra = "boc"
+	K8sNamespaceCassandra = ""
 
 	//# fp base url
-	FpBaseUrl = "http://10.1.9.188:11149/api-1.0-SNAPSHOT"
+	FpBaseUrl = ""
 
 	//# cassandra或yugabytedb pod数量, 每个表示一组压测
 	DB_POD_RANGE = "1"
@@ -47,11 +47,11 @@ const (
 	//#数据维度
 	DataRange = "7"
 
-	Host = "10.1.9.188, 10.1.9.189"
+	Host = ""
 
 	//# cassandra-data path
-	CassandraDataPath  = "\\/home\\/datavisor\\/gaohui\\/boc\\/cassandra\\/"
-	CassandraData1Path = "/home/datavisor/gaohui/boc/cassandra/"
+	CassandraDataPath  = ""
+	CassandraData1Path = ""
 
 	//#fp最终数量
 	TotalFPNum = 1
@@ -66,8 +66,8 @@ const (
 	ConnectNumDefault = 8
 
 	//# wrk 压测脚本路径
-	WrkScript = "/Users/koko/go/src/BOC/press-test/wrk_script/test.sh"
-	Logpath   = "/Users/koko/go/src/press-test/logs"
+	WrkScript = ""
+	Logpath   = ""
 	//# 压测结果保存位置
 	CsvFilePath      = ""
 	CsvFileName      = "wrk_result.csv"
