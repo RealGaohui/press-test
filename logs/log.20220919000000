@@ -1,0 +1,7 @@
+2022-09-19 00:00:58 [utils.go:415] [INFO] [gaohuitest] prepare pv host path
+2022-09-19 00:00:59 [utils.go:91] [INFO] [gaohuitest] create 10.1.9.188:/home/datavisor/gaohui/boc/cassandra/0-0 successfully
+2022-09-19 00:01:00 [utils.go:91] [INFO] [gaohuitest] create 10.1.9.189:/home/datavisor/gaohui/boc/cassandra/0-0 successfully
+2022-09-19 00:01:00 [utils.go:446] [WARN] [gaohuitest]  create pv [cassandra-boc-0] successful
+2022-09-19 00:01:01 [utils.go:91] [INFO] [gaohuitest] create 10.1.9.188:/home/datavisor/gaohui/boc/cassandra/1-0 successfully
+2022-09-19 00:01:02 [utils.go:91] [INFO] [gaohuitest] create 10.1.9.189:/home/datavisor/gaohui/boc/cassandra/1-0 successfully
+2022-09-19 00:01:03 [utils.go:443] [WARN] [gaohuitest] failed to create pv [cassandra-boc-1]
